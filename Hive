@@ -1,0 +1,96 @@
+# Downloading dataset movielens movies.dat:
+wget -P ~/ https://bitbucket.org/cackoa/datasets/raw/eb4c7eff5243c0219acaab35e3ce371639774e7d/movielens/movielens-monkey/movies.dat
+
+# Taking a look at the dataset:
+head movies.dat
+
+# Going to Hive:
+sudo hive shell
+
+# Controlling if there are any similar tables already existing:
+DROP TABLE IF EXISTS movies;
+
+# Creating  a new external table:
+CREATE EXTERNAL TABLE IF NOT EXISTS movies (
+    > movieID INT,
+    > title STRING,
+    > genres STRING)
+    > ROW FORMAT DELIMITED FIELDS TERMINATED BY '@';
+
+# Loading data to the table from local catalog:
+LOAD DATA LOCAL INPATH '/home/ec2-user/movies.dat'
+    > OVERWRITE INTO TABLE movies;
+
+# Describing tables (column names and type):
+DESCRIBE movies;
+SELECT * FROM movies LIMIT 10;
+
+# Checking existing tables and databases:
+SHOW DATABASES;
+SHOW TABLES;
+
+# Counting data:
+SELECT COUNT(1) FROM movies LIMIT 10;
+
+# QUESTION : Which movies have the highest number of categories?
+SELECT title, SIZE(SPLIT(genres, '\\|')) AS categories FROM movies ORDER BY categories DESC LIMIT 10;
+
+# Downloading dataset ratings.dat from movielens:
+wget -P ~/ https://bitbucket.org/cackoa/datasets/raw/eb4c7eff5243c0219acaab35e3ce371639774e7d/movielens/movielens-monkey/ratings.dat
+
+ CREATE EXTERNAL TABLE IF NOT EXISTS ratings (
+    > person_id INT,
+    > movieID INT,
+    > rating INT,
+    > times INT)
+    > ROW FORMAT DELIMITED FIELDS TERMINATED BY '@'
+    
+ LOAD DATA LOCAL INPATH '/home/ec2-user/ratings.dat'
+    > OVERWRITE INTO TABLE ratings;
+    
+# QUESTION: What is the average rating?
+SELECT AVG(rating) FROM ratings LIMIT 10;
+
+# QUESTION: Count users and movies in the database ratings.
+SELECT COUNT(DISTINCT person_id), COUNT(DISTINCT movieID) FROM ratings LIMIT 10;
+
+# QUESTION: See how users where rating the movies, add column commenting the rating (bad, ok, good, great).
+SELECT person_id, movieID, CASE
+    > WHEN rating < 1 THEN 'bad'
+    > WHEN rating >=1 AND rating <3 THEN 'ok'
+    > WHEN rating >=3 AND rating <5 THEN 'good'
+    > ELSE 'great'
+    > END AS human_rating FROM ratings LIMIT 30;
+    
+# QUESTION: How many movies have more than 3 categories?
+SELECT SUM(CASE WHEN size(split(genres, '\\|')) > 3 THEN 1 ELSE 0 END) 
+FROM movies;
+
+# QUESTION: Which movie was rated the most?
+SELECT m.title, COUNT(r.rating) AS ratings_num 
+FROM movies m 
+JOIN ratings r ON m.movieid = r.movieid 
+GROUP BY m.title 
+ORDER BY ratings_num DESC LIMIT 1;
+
+# QUESTION: Which user and how many times rated movies?
+SELECT person_id, COUNT(rating) AS rating_count 
+FROM ratings 
+GROUP BY person_id 
+ORDER BY rating_count DESC LIMIT 1;
+    
+# QUESTION: How many movies where filmed each year (top 5)?
+SELECT SUBSTR(title, -5,4) AS year, COUNT(movieID) AS sum_movies 
+FROM movies 
+GROUP BY SUBSTR(title, -5,4) 
+ORDER BY sum_movies DESC limit 10;
+
+# QUESTION: How many movies have "The" in the title?
+SELECT COUNT(*) FROM movies WHERE UPPER(title) LIKE '%THE%';
+
+SELECT SUM(CASE WHEN UPPER(title) like '%THE%' THEN 1 ELSE 0 END)
+FROM movies;
+    
+    
+    
+    
