@@ -1,0 +1,67 @@
+
+# wejscie do dokera
+sudo docker exec -it cas1 bash      
+
+# procesy uruchomione w kontenerzy
+ps aux     
+
+#uruchamianie jezyka cqlsh
+cqlsh
+
+# pokazuje z ilu wezlow sklada sie klaster, podaje adres kontenera nadany przed dockera, tokeny, id wezla i lokalizacja w racku
+nodetool status
+
+# informacje o aktualne zuzycie pamieci 
+nodoetool info
+
+
+WYJSCIE Z DOKERA
+#
+sudo docker inspect
+
+# Wejsie bezposrednio do cqlsh
+sudo docker exec -it cas1 cqlsh
+
+# Tworzenie Keyspace (w wiekszosci wypadkow wystarczy pierwsza litera i tab)
+CREATE KEYSPACE ex1 WITH replication = {'class': 'SimpleStrategy', 'replication_factor': 1};
+
+#Przejscie do Keyspace
+USE ex1;
+
+   CREATE TABLE scores
+   (
+     user TEXT,
+     game TEXT,
+     year INT,
+     score INT,
+     PRIMARY KEY (user, game, year)
+   );
+
+   INSERT INTO scores (user, game, year, score) VALUES ('pcmanus', 'Coup', 2015, 4000);
+   INSERT INTO scores (user, game, year, score) VALUES ('jbellis', 'Coup', 2015, 1750);
+   INSERT INTO scores (user, game, year, score) VALUES ('yukim', 'Coup', 2015, 2250);
+   INSERT INTO scores (user, game, year, score) VALUES ('tjake', 'Coup', 2015, 500);
+   INSERT INTO scores (user, game, year, score) VALUES ('jmckenzie', 'Coup', 2015, 2000);
+   INSERT INTO scores (user, game, year, score) VALUES ('iamaleksey', 'Coup', 2015, 2500);
+   INSERT INTO scores (user, game, year, score) VALUES ('tjake', 'Coup', 2015, 1000);
+   INSERT INTO scores (user, game, year, score) VALUES ('pcmanus', 'Coup', 2015, 2000);
+
+SELECT * from scores ;
+
+INSERT INTO scores (user, game, year, score) VALUES ( 'pcmanus', 'Coup', 2016, 2100);
+SELECT * FROM SCORES WHERE user='pcmanus' AND game='Coup' AND year>2015;
+
+SELECT * FROM SCORES WHERE user='pcmanus' AND game='Coup' AND year>=2015 ORDER BY game DESC , year DESC ;
+
+UPDATE scores SET score = 3100 WHERE user ='pcmanus' AND game='Football' AND year=2017;
+
+DELETE from scores WHERE user='pcmanus' AND game='Football' AND year > 2000;
+
+SELECT * from scores WHERE user='pcmanus' AND game='Coup' AND year=2015 AND score=2000 ALLOW FILTERING ;
+
+INSERT INTO scores (user , game , year , score ) VALUES ( 'jbellis', 'Coup', 2020, 3000) USING TTL 10;
+UPDATE scores USING TTL 10 SET score = 3000 WHERE user='jbellis' AND game = 'Coup' AND year=2015;
+
+ ALTER TABLE scores ADD try INT;
+  UPDATE scores SET try =1 WHERE user='pcmanus' AND game='Coup' AND year=2015;
+
