@@ -64,4 +64,101 @@ UPDATE scores USING TTL 10 SET score = 3000 WHERE user='jbellis' AND game = 'Cou
 
  ALTER TABLE scores ADD try INT;
   UPDATE scores SET try =1 WHERE user='pcmanus' AND game='Coup' AND year=2015;
+  
+# Dodawanie licznikow
+     CREATE TABLE user_action (
+       user_id text,
+       logins counter,
+       psw_change counter,
+       PRIMARY KEY (user_id)
+     );
+
+
+UPDATE user_action SET logins = logins+30, psw_change=psw_change+1 WHERE user_id='thissomeuser';
+
+
+# Usuwanie danych z tabeli bez usuniecia schematu:
+TRUNCATE TABLE user_action;
+
+# Usuwanie calej tabeli
+DROP TABLE user_action;
+
+# Kolekcje SET
+CREATE TABLE users (
+   user_id text,
+   first_name text,
+   last_name text,
+   emails set<text>,
+   PRIMARY KEY(user_id)
+);
+
+INSERT INTO users (user_id, first_name, last_name, emails) VALUES('bla', 'Tom', 'Somesurname', {'email1@gmail.com', 'email2@wp.pl'});
+UPDATE users SET emails = emails + {'email3@server.pl'} WHERE user_id='bla';
+UPDATE users SET emails = emails - {'email2@wp.pl'} WHERE user_id='bla';
+
+# Listy
+ALTER TABLE users ADD addresses list<text>;
+UPDATE users SET addresses = ['Warsaw', 'Gdansk', 'Wroclaw'] WHERE user_id='bla';
+UPDATE users SET addresses -= ['Gdansk', 'Wroclaw'] WHERE user_id='bla';
+
+UPDATE users SET addresses = ['Warsaw', 'Gdansk', 'Wroclaw'] WHERE user_id='bla';
+UPDATE users SET addresses += ['Gdansk'] WHERE user_id='bla';
+UPDATE users SET addresses[3] = 'Lodz' WHERE user_id='bla';
+
+
+ALTER TABLE users DROP emails;
+
+# Map
+ALTER TABLE users ADD meta map<text, text>;
+UPDATE users SET meta = {'klucz':'wartosc'} WHERE user_id='bla';
+UPDATE users SET meta['klucz2'] = 'c' WHERE user_id='bla';
+UPDATE users SET meta['klucz2'] = null WHERE user_id='bla';
+
+ALTER TABLE users ADD tags map<text, frozen<list<int>>>;
+UPDATE users SET tags['klucz'] = [0,1,2] WHERE user_id='bla';
+
+# Tuples
+CREATE TABLE collect_things (
+       k int PRIMARY KEY,
+       v tuple<int, text, float>
+);
+INSERT INTO collect_things (k, v) VALUES(0, (3, 'bar', 2.1));
+
+# User defined types (UDT)
+CREATE TYPE address (
+      street text,
+      city text,
+      zip_code int,
+      phones frozen<set<text>>
+    );
+
+    CREATE TABLE users (
+      id uuid PRIMARY KEY,
+      address address
+    );
+
+INSERT INTO users (id, address) VALUES (uuid(), {
+        street: 'Dworcowa',
+        city: 'Warszawa',
+        zip_code: 12345,
+        phones: {'+481231212'}
+    });
+
+UPDATE users SET address.city = 'Poznań' WHERE id = 0e98dfce-379c-42a5-8f10-6342ae2e663e;
+SELECT * FROM users WHERE id=0e98dfce-379c-42a5-8f10-6342ae2e663e ;
+
+# Agregacje
+select min(score), max(score), avg(score), sum(score) from scores where user='pcmanus';
+
+# Secondary index
+CREATE INDEX scores_by_score ON scores (score);
+SELECT * FROM scores WHERE user='pcmanus' AND score=4000;
+
+# Hurtowy zapis danych
+COPY scores (user, game, year, score) TO 'backup.csv' WITH HEADER=TRUE;
+TRUNCATE scores;
+COPY scores (user, game, year, score) FROM 'backup.csv' WITH HEADER=TRUE;
+
+
+
 
