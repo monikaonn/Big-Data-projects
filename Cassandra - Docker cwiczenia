@@ -1,31 +1,28 @@
-
-# wejscie do dokera
+# Wejscie do dokera
 sudo docker exec -it cas1 bash      
 
-# procesy uruchomione w kontenerzy
+# Sprawdzenie procesów uruchomionych w kontenerze
 ps aux     
 
-#uruchamianie jezyka cqlsh
+sudo docker inspect
+
+# Uruchamianie języka cqlsh
 cqlsh
 
-# pokazuje z ilu wezlow sklada sie klaster, podaje adres kontenera nadany przed dockera, tokeny, id wezla i lokalizacja w racku
+# Sprawdzenie z ilu wezłów składa się klaster, podaje adres kontenera nadany przed dockera, tokeny, id węzła i lokalizację w racku
 nodetool status
 
-# informacje o aktualne zuzycie pamieci 
+# Informacje o aktualnym zużyciu pamięci 
 nodoetool info
 
 
-WYJSCIE Z DOKERA
-#
-sudo docker inspect
-
-# Wejsie bezposrednio do cqlsh
+# Wejsie bezpośrednio do języka cqlsh
 sudo docker exec -it cas1 cqlsh
 
-# Tworzenie Keyspace (w wiekszosci wypadkow wystarczy pierwsza litera i tab)
+# Tworzenie Keyspace (w wiekszosci wypadków wystarczy wpisać pierwszą literę i tab)
 CREATE KEYSPACE ex1 WITH replication = {'class': 'SimpleStrategy', 'replication_factor': 1};
 
-#Przejscie do Keyspace
+# Przejście do Keyspace
 USE ex1;
 
    CREATE TABLE scores
@@ -65,7 +62,7 @@ UPDATE scores USING TTL 10 SET score = 3000 WHERE user='jbellis' AND game = 'Cou
  ALTER TABLE scores ADD try INT;
   UPDATE scores SET try =1 WHERE user='pcmanus' AND game='Coup' AND year=2015;
   
-# Dodawanie licznikow
+# Dodawanie liczników
      CREATE TABLE user_action (
        user_id text,
        logins counter,
@@ -77,13 +74,13 @@ UPDATE scores USING TTL 10 SET score = 3000 WHERE user='jbellis' AND game = 'Cou
 UPDATE user_action SET logins = logins+30, psw_change=psw_change+1 WHERE user_id='thissomeuser';
 
 
-# Usuwanie danych z tabeli bez usuniecia schematu:
+# Usuwanie danych z tabeli bez usunięcia schematu:
 TRUNCATE TABLE user_action;
 
-# Usuwanie calej tabeli
+# Usuwanie całej tabeli
 DROP TABLE user_action;
 
-# Kolekcje SET
+# Set
 CREATE TABLE users (
    user_id text,
    first_name text,
