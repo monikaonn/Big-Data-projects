@@ -1,0 +1,105 @@
+1. Do kolekcji products dodać następujące dokumenty:
+2. Wyświetlić nazwy produktów posortowane według rating (od najwyższego)
+3. Wyświetlić najdroższy produkt w kategori "Electronics" (TOP 1)
+4. Wyświetlić produkty, które mają przynajmniej 1 magazyn z qty < 10
+5. Wyświetlić produkty które mają kategorie Games lub RTV
+6. Zmienić wartość rating dla wszystkich produktów na 10 (updateMany, {multi : true})
+
+
+db.products.insert([
+{
+name: "ProductA", 
+price: 50, 
+rating: 8.6, 
+categories : ["Computers", "Games"], 
+warehouses : [{name: "Magazyn1", qty: 10}, {name: "Magazyn2", qty: 20}]
+}, 
+
+{
+name: "ProductB", 
+price: 250, 
+rating: 7.2, 
+categories : ["RTV", "Electronics"], 
+warehouses : [{name: "Magazyn2", qty: 5}]
+},
+ 
+{
+name: "ProductC", 
+price: 150, 
+rating: 4.6, 
+categories : ["Games", "Consoles"], 
+warehouses : [{name: "Magazyn2", qty: 50}, {name: "Magazyn3", qty: 30}]
+}, 
+ 
+{
+name: "ProductD", 
+price: 600, 
+rating: 9.5, 
+categories : ["Computers", "Electronics"], 
+warehouses : [{name: "Magazyn1", qty: 8}, {name: "Magazyn3", qty: 15}]
+},
+]
+) 
+
+db.products.find({}, {name:1, _id:0}).sort({rating : -1}) 
+db.products.find({categories: "Electronics"}).sort({price : -1}).limit(1) 
+db.products.find({"warehouses.qty": {$lt :10} })  
+db.products.find({"categories": {$in :["Games", "RTV"]}})  
+db.products.update({}, {$set : {rating : 10}}, {multi : true})
+
+1.Dodać listę produktów do products2:
+db.products2.insert({name : "ProductA", price : 10, qty : 55})
+db.products2.insert({name : "ProductB", price : 50, qty : 5})
+db.products2.insert({name : "ProductC", price : 100, qty : 40})
+
+2. Wyszukać te produkty których (wartość) price*qty > 500
+
+
+db.products2.find({$expr : {$gt : [
+{$multiply : ["$price","$qty"]},
+500
+]
+}})
+
+db.products2.find({$where : function (){
+return this.price * this.qty > 500
+}})
+
+db.users.find({name : /^a.*/i}) 
+
+
+1. Do kolekcji counters dodać nowy dokument:
+db.counters.insert(
+{
+	counterName : "userIdCounter",
+	value : 1
+})
+
+2. Zwiększyć wartośc licznika (value) o 1 za pomocą findAndModify
+3. Przetestować w wersjach:
+- bez flagi new
+- z flagą new : false
+- z flagą new : true
+
+
+db.counters.insert(
+{
+	counterName : "userIdCounter",
+	value : 1
+})
+
+db.counters.findAndModify(
+{
+	query : { counterName : "userIdCounter"}, 
+	update: { $inc : { "value" : 1} },
+	new  : true
+})
+
+
+
+db.users.update({_id : 3}, {$addToSet : {"cities" : {street : "Marszałkowska", city : "Warszawa"}}})
+
+1. Do wszystkich produktów w kolekcji products 
+dodaj kategorię "Electronics" zapewniając jej unikalność
+
+db.products.update({}, {$addToSet : {categories : "Electronics"}}, {multi : true})  
